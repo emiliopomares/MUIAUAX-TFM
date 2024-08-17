@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Interactive 3D Cube</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <script>
+        // Scene setup
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        var renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Cube creation
+        var geometry = new THREE.BoxGeometry();
+        var material = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+        var cube = new THREE.Mesh(geometry, material);
+        scene.add(cube);
+
+        // Camera position
+        camera.position.z = 5;
+
+        // Rotation variables
+        var isDragging = false;
+        var previousMousePosition = { x: 0, y: 0 };
+
+        // Mouse events
+        document.addEventListener('mousedown', function(e) {
+            isDragging = true;
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (isDragging) {
+                var deltaMove = {
+                    x: e.offsetX - previousMousePosition.x,
+                    y: e.offsetY - previousMousePosition.y
+                };
+
+                cube.rotation.y += deltaMove.x * window.rotationSpeed;
+                cube.rotation.x += deltaMove.y * window.rotationSpeed;
+            }
+            previousMousePosition = { x: e.offsetX, y: e.offsetY };
+        });
+
+        document.addEventListener('mouseup', function(e) {
+            isDragging = false;
+        });
+
+        // Resize handler
+        window.addEventListener('resize', function() {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            cube.scale.set(window.cubeSize, window.cubeSize, window.cubeSize); // Apply cube size
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Function to update cube settings
+        function updateSettings(color, size, speed) {
+            cube.material.color.set(color);
+            window.cubeSize = size;
+            window.rotationSpeed = speed;
+        }
+
+        // Expose updateSettings to window
+        window.updateSettings = updateSettings;
+    </script>
+</body>
+</html>
