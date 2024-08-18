@@ -1,5 +1,5 @@
 import cv2
-from flask import Flask, Response
+from flask import Flask, request, Response
 from utils.cameras import list_available_webcams
 
 app = Flask(__name__)
@@ -27,8 +27,8 @@ camera_1.set(cv2.CAP_PROP_FRAME_WIDTH, frame_width)
 camera_1.set(cv2.CAP_PROP_FRAME_HEIGHT, frame_height)
 
 # Desired output resolution
-output_width = 224
-output_height = 224
+output_width = 256
+output_height = 256
 
 def generate_frames(camera):
     while True:
@@ -46,12 +46,15 @@ def generate_frames(camera):
 
 @app.route('/video_feed_0')
 def video_feed_0():
-    return Response(generate_frames(camera_0),
+    mode = request.args.get('mode', 'non-inverted')
+    print(mode)
+    return Response(generate_frames(camera_0 if mode=="non-inverted" else camera_1),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/video_feed_1')
-def video_feed_1():
-    return Response(generate_frames(camera_1),
+def video_feed_1(mode: str ="non-inverted"):
+    mode = request.args.get('mode', 'non-inverted')
+    return Response(generate_frames(camera_1 if mode=="non-inverted" else camera_0),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
